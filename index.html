@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>📚 Noun Spelling – Std 4-5</title>
+    <title>📚 English Spelling Trainer</title>
     <style>
         :root {
             --bg: #f0f4f8;
@@ -101,10 +101,10 @@
                     <p>🔤 Word</p>
                     <div class="flip-word" id="flipWordDisplay"></div>
                     <button class="flip-speaker" id="flipSpeakerBtn">🔊</button>
-                    <p class="flip-hint">Tap to see Odia meaning</p>
+                    <p class="flip-hint">Tap to see  meaning</p>
                 </div>
                 <div class="flip-card-back">
-                    <p>📖 Odia Meaning</p>
+                    <p>📖 Meaning</p>
                     <div class="flip-meaning" id="flipMeaningDisplay"></div>
                     <p class="flip-hint" id="flipWordAgain"></p>
                     <button class="flip-btn" id="flipContinueBtn">▶ Start Challenge</button>
@@ -125,7 +125,7 @@
     <div class="game-container">
         <div class="header">
             <div class="tabs">
-                <button id="tabNoun" class="tab-btn active">📖 Noun</button>
+                <button id="tabNoun" class="tab-btn active">📖 Your Words</button>
                 <button id="tabPractice" class="tab-btn">✍️ Practice</button>
                 <button id="tabAdd" class="tab-btn">➕ Add Word</button>
             </div>
@@ -138,7 +138,7 @@
 
         <!-- Noun Panel (Quiz) -->
         <div id="nounPanel" class="panel">
-            <p class="drop-zone-label">🔊 Listen and choose the correct noun</p>
+            <p class="drop-zone-label">🔊 Listen and choose the correct word</p>
             <div class="quiz-options" id="quizOptions"></div>
             <div class="typing-area" id="typingArea" style="display:none;">
                 <p>Type correct spelling <span style="color:#e53e3e;">3 times</span>:</p>
@@ -153,7 +153,7 @@
 
         <!-- Practice Panel (Spell) -->
         <div id="practicePanel" class="panel" style="display:none;">
-            <p class="drop-zone-label">👇 Drag letters to spell the noun</p>
+            <p class="drop-zone-label">👇 Drag letters to spell the word</p>
             <div class="drop-zone" id="dropZone"></div>
             <p class="feedback" id="spellFeedback"></p>
             <p class="source-label">🔤 Letter Blocks</p>
@@ -163,14 +163,14 @@
 
         <!-- Add Word Panel -->
         <div id="addPanel" class="panel" style="display:none;">
-            <p class="drop-zone-label">➕ Add a new noun (replaces oldest)</p>
+            <p class="drop-zone-label">➕ Add a new word (replaces oldest)</p>
             <div class="add-form">
                 <input type="text" id="newEnglish" placeholder="English word" autocomplete="off">
                 <input type="text" id="newOdia" placeholder="Odia meaning" autocomplete="off">
                 <button id="addWordBtn">Add Word</button>
             </div>
             <p class="feedback" id="addFeedback"></p>
-            <p style="font-size:0.85rem; color:#5a6c7d;">List will always have 20 words (FIFO)</p>
+            <p style="font-size:0.85rem; color:#5a6c7d;">List will always have 20 words </p>
         </div>
     </div>
 
