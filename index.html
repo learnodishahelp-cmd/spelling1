@@ -1,0 +1,659 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>📚 Noun Spelling – Std 4-5</title>
+    <style>
+        :root {
+            --bg: #f0f4f8;
+            --card-bg: #ffffff;
+            --drop-zone-bg: #e8f0fe;
+            --slot-empty: #d0dbe8;
+            --text: #2d3748;
+            --success: #38a169;
+            --error: #e53e3e;
+            --gold: #ecc94b;
+            --shadow: 0 4px 6px rgba(0, 0, 0, 0.07), 0 2px 4px rgba(0, 0, 0, 0.06);
+            --shadow-lg: 0 10px 25px rgba(0, 0, 0, 0.1), 0 4px 10px rgba(0, 0, 0, 0.08);
+            --radius: 16px;
+            --transition: 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        * { margin:0; padding:0; box-sizing:border-box; }
+        body {
+            font-family: 'Segoe UI', 'Poppins', system-ui, sans-serif;
+            background: linear-gradient(135deg, #e2e8f0, #edf2f7, #e8f0fe, #f0f4f8);
+            min-height:100vh; display:flex; justify-content:center; align-items:center; padding:20px;
+            user-select: none; -webkit-user-select: none;
+        }
+        body::before, body::after { content:''; position:fixed; border-radius:50%; filter:blur(80px); opacity:0.15; z-index:0; pointer-events:none; }
+        body::before { width:400px; height:400px; background:#a3c9ff; top:-100px; right:-80px; animation:floatBlob 12s infinite; }
+        body::after { width:350px; height:350px; background:#fbbf6c; bottom:-120px; left:-90px; animation:floatBlob 15s infinite reverse; }
+        @keyframes floatBlob { 0%,100%{ transform:translate(0,0) scale(1); } 25%{ transform:translate(40px,-30px) scale(1.1); } 50%{ transform:translate(-20px,-50px) scale(0.9); } 75%{ transform:translate(-35px,20px) scale(1.05); } }
+
+        .flip-overlay, .end-overlay {
+            position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.4);
+            backdrop-filter:blur(6px); z-index:100; display:flex; align-items:center; justify-content:center;
+        }
+        .flip-overlay.hidden, .end-overlay.hidden { display:none; }
+        .flip-card { width:280px; height:360px; perspective:1000px; }
+        .flip-card-inner { width:100%; height:100%; transition:transform 0.6s; transform-style:preserve-3d; border-radius:20px; box-shadow:0 20px 40px rgba(0,0,0,0.25); }
+        .flip-card-inner.flipped { transform:rotateY(180deg); }
+        .flip-card-front, .flip-card-back { position:absolute; width:100%; height:100%; backface-visibility:hidden; border-radius:20px; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:24px; background:white; gap:14px; }
+        .flip-card-back { transform:rotateY(180deg); background:#fef9e7; }
+        .flip-word { font-size:2.6rem; font-weight:800; color:#1a365d; }
+        .flip-meaning { font-size:1.8rem; font-weight:700; color:#6b4f1a; }
+        .flip-hint { font-size:0.85rem; color:#7a8a9e; }
+        .flip-btn { margin-top:16px; padding:12px 28px; border:none; border-radius:30px; background:#4a90d9; color:white; font-weight:700; font-size:1rem; cursor:pointer; }
+        .flip-speaker { width:48px; height:48px; border-radius:50%; border:2px solid #4a90d9; background:#ebf4ff; font-size:1.5rem; cursor:pointer; display:flex; align-items:center; justify-content:center; }
+
+        .end-card { background:white; padding:32px; border-radius:24px; text-align:center; box-shadow:0 20px 40px rgba(0,0,0,0.2); }
+        .end-card h2 { font-size:2rem; color:#1a365d; }
+        .final-score { font-size:3rem; font-weight:800; color:#d69e2e; margin:16px 0; }
+        .restart-btn { background:#38a169; color:white; border:none; padding:12px 32px; border-radius:30px; font-weight:700; cursor:pointer; }
+
+        .game-container { position:relative; z-index:1; width:100%; max-width:650px; background:var(--card-bg); border-radius:24px; padding:32px 28px; box-shadow:var(--shadow-lg); display:flex; flex-direction:column; align-items:center; gap:20px; border:1px solid rgba(255,255,255,0.6); }
+        .header { width:100%; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; }
+        .tabs { display:flex; gap:6px; background:#edf2f7; border-radius:40px; padding:4px; }
+        .tab-btn { padding:8px 16px; border-radius:30px; border:none; background:transparent; font-weight:600; font-size:0.85rem; color:#4a5568; cursor:pointer; }
+        .tab-btn.active { background:white; color:#1a365d; box-shadow:0 2px 8px rgba(0,0,0,0.1); }
+        .header-restart { padding:8px 14px; border-radius:30px; border:none; background:#f6e05e; color:#744210; font-weight:700; cursor:pointer; font-size:0.85rem; }
+        .score-badge { display:flex; align-items:center; gap:6px; background:linear-gradient(135deg,#fff7e6,#fffbeb); border:2px solid #f6c23e; border-radius:50px; padding:8px 16px; font-weight:700; font-size:1rem; color:#7c5e10; }
+        .speaker-btn { width:44px; height:44px; border-radius:50%; border:2px solid #4a90d9; background:#ebf4ff; cursor:pointer; font-size:1.3rem; display:flex; align-items:center; justify-content:center; }
+
+        .panel { width:100%; display:flex; flex-direction:column; align-items:center; gap:16px; }
+        .drop-zone-label { font-size:0.85rem; font-weight:600; color:#5a6c7d; text-transform:uppercase; }
+        .drop-zone { display:flex; flex-wrap:wrap; gap:10px; justify-content:center; padding:18px 16px; background:var(--drop-zone-bg); border-radius:var(--radius); min-height:80px; border:2.5px dashed #c5d5e8; }
+        .slot { width:52px; height:58px; border-radius:12px; border:2.5px dashed #bcccdc; display:flex; align-items:center; justify-content:center; font-size:1.6rem; font-weight:700; background:#f7fafc; }
+        .slot.filled { border-style:solid; border-color:#4a90d9; background:#f0f6ff; }
+        .letter-block { width:52px; height:58px; border-radius:12px; display:flex; align-items:center; justify-content:center; font-size:1.6rem; font-weight:700; color:#fff; cursor:grab; box-shadow:0 4px 10px rgba(0,0,0,0.12); }
+        .letter-block.color-0{ background:linear-gradient(135deg,#f472b6,#ec4899); }
+        .letter-block.color-1{ background:linear-gradient(135deg,#fb923c,#f97316); }
+        .letter-block.color-2{ background:linear-gradient(135deg,#60a5fa,#3b82f6); }
+        .letter-block.color-3{ background:linear-gradient(135deg,#a78bfa,#7c3aed); }
+        .letter-block.color-4{ background:linear-gradient(135deg,#34d399,#10b981); }
+        .quiz-options { display:flex; flex-direction:column; gap:12px; width:100%; max-width:400px; }
+        .quiz-option { padding:14px; border-radius:14px; border:2px solid #e2e8f0; background:white; font-size:1.2rem; font-weight:600; letter-spacing:1px; cursor:pointer; text-align:center; }
+        .quiz-option.correct-choice { background:#f0fdf4; border-color:#38a169; }
+        .quiz-option.wrong-choice { background:#fff5f5; border-color:#e53e3e; }
+        .typing-area { display:flex; flex-direction:column; align-items:center; gap:10px; }
+        .typing-input { padding:12px; font-size:1.2rem; border-radius:12px; border:2px solid #cbd5e0; text-align:center; width:100%; max-width:280px; user-select:text!important; -webkit-user-select:text!important; }
+        .typing-submit { padding:10px 28px; border-radius:30px; border:none; background:#4a90d9; color:white; font-weight:700; cursor:pointer; }
+        .feedback { font-weight:700; min-height:24px; }
+
+        /* Add Word Panel */
+        .add-form { display:flex; flex-direction:column; gap:12px; width:100%; max-width:320px; }
+        .add-form input { padding:12px; border-radius:12px; border:2px solid #cbd5e0; font-size:1rem; text-align:center; }
+        .add-form button { padding:12px; border-radius:30px; border:none; background:#38a169; color:white; font-weight:700; cursor:pointer; }
+
+        @media (max-width:500px) {
+            .game-container { padding:20px 14px; }
+            .letter-block, .slot { width:44px; height:50px; font-size:1.3rem; }
+            .quiz-option { font-size:1rem; }
+        }
+    </style>
+</head>
+<body>
+    <div class="flip-overlay hidden" id="flipOverlay">
+        <div class="flip-card">
+            <div class="flip-card-inner" id="flipCardInner">
+                <div class="flip-card-front">
+                    <p>🔤 Word</p>
+                    <div class="flip-word" id="flipWordDisplay"></div>
+                    <button class="flip-speaker" id="flipSpeakerBtn">🔊</button>
+                    <p class="flip-hint">Tap to see Odia meaning</p>
+                </div>
+                <div class="flip-card-back">
+                    <p>📖 Odia Meaning</p>
+                    <div class="flip-meaning" id="flipMeaningDisplay"></div>
+                    <p class="flip-hint" id="flipWordAgain"></p>
+                    <button class="flip-btn" id="flipContinueBtn">▶ Start Challenge</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="end-overlay hidden" id="endOverlay">
+        <div class="end-card">
+            <h2>🎯 Well done!</h2>
+            <div class="final-score" id="finalScore">0</div>
+            <p>out of 20 words</p>
+            <button class="restart-btn" id="endRestartBtn">↺ Restart</button>
+        </div>
+    </div>
+
+    <div class="game-container">
+        <div class="header">
+            <div class="tabs">
+                <button id="tabNoun" class="tab-btn active">📖 Noun</button>
+                <button id="tabPractice" class="tab-btn">✍️ Practice</button>
+                <button id="tabAdd" class="tab-btn">➕ Add Word</button>
+            </div>
+            <button class="header-restart" id="headerRestartBtn">↺ Restart</button>
+            <button class="speaker-btn" id="speakerBtn">🔊</button>
+            <div class="score-badge">
+                <span>⭐</span> <span id="scoreValue">0</span>
+            </div>
+        </div>
+
+        <!-- Noun Panel (Quiz) -->
+        <div id="nounPanel" class="panel">
+            <p class="drop-zone-label">🔊 Listen and choose the correct noun</p>
+            <div class="quiz-options" id="quizOptions"></div>
+            <div class="typing-area" id="typingArea" style="display:none;">
+                <p>Type correct spelling <span style="color:#e53e3e;">3 times</span>:</p>
+                <p id="hintWordDisplay"></p>
+                <input type="text" class="typing-input" id="quizInput" autocomplete="off">
+                <button class="typing-submit" id="checkTypeBtn">Submit</button>
+                <p class="feedback" id="typingFeedback"></p>
+            </div>
+            <p class="feedback" id="quizFeedback"></p>
+            <p class="word-counter" id="quizWordCounter">Word 1/20</p>
+        </div>
+
+        <!-- Practice Panel (Spell) -->
+        <div id="practicePanel" class="panel" style="display:none;">
+            <p class="drop-zone-label">👇 Drag letters to spell the noun</p>
+            <div class="drop-zone" id="dropZone"></div>
+            <p class="feedback" id="spellFeedback"></p>
+            <p class="source-label">🔤 Letter Blocks</p>
+            <div id="sourceArea" style="display:flex;flex-wrap:wrap;gap:10px;justify-content:center;padding:16px;background:#fafcfd;border-radius:16px;"></div>
+            <p class="word-counter" id="spellWordCounter">Word 1/20</p>
+        </div>
+
+        <!-- Add Word Panel -->
+        <div id="addPanel" class="panel" style="display:none;">
+            <p class="drop-zone-label">➕ Add a new noun (replaces oldest)</p>
+            <div class="add-form">
+                <input type="text" id="newEnglish" placeholder="English word" autocomplete="off">
+                <input type="text" id="newOdia" placeholder="Odia meaning" autocomplete="off">
+                <button id="addWordBtn">Add Word</button>
+            </div>
+            <p class="feedback" id="addFeedback"></p>
+            <p style="font-size:0.85rem; color:#5a6c7d;">List will always have 20 words (FIFO)</p>
+        </div>
+    </div>
+
+    <script>
+        (function() {
+            // ============ LOCAL STORAGE WORD LIST ============
+            const STORAGE_KEY = 'nounSpellingList';
+            const DEFAULT_LIST = [
+                { word: 'apple', odia: 'ସେଓ' },
+                { word: 'school', odia: 'ବିଦ୍ୟାଳୟ' },
+                { word: 'family', odia: 'ପରିବାର' },
+                { word: 'elephant', odia: 'ହାତୀ' },
+                { word: 'guitar', odia: 'ଗୀଟାର' },
+                { word: 'window', odia: 'ଝରକା' },
+                { word: 'orange', odia: 'କମଳା' },
+                { word: 'river', odia: 'ନଦୀ' },
+                { word: 'mountain', odia: 'ପର୍ବତ' },
+                { word: 'library', odia: 'ପାଠାଗାର' },
+                { word: 'hospital', odia: 'ଡାକ୍ତରଖାନା' },
+                { word: 'teacher', odia: 'ଶିକ୍ଷକ' },
+                { word: 'student', odia: 'ଛାତ୍ର' },
+                { word: 'computer', odia: 'କମ୍ପ୍ୟୁଟର' },
+                { word: 'garden', odia: 'ବଗିଚା' },
+                { word: 'kitchen', odia: 'ରୋଷେଇ ଘର' },
+                { word: 'bicycle', odia: 'ସାଇକେଲ' },
+                { word: 'airport', odia: 'ବିମାନ ବନ୍ଦର' },
+                { word: 'ocean', odia: 'ମହାସାଗର' },
+                { word: 'planet', odia: 'ଗ୍ରହ' }
+            ];
+
+            function loadWordList() {
+                const stored = localStorage.getItem(STORAGE_KEY);
+                if (stored) {
+                    try {
+                        const arr = JSON.parse(stored);
+                        if (Array.isArray(arr) && arr.length === 20) return arr;
+                    } catch(e) {}
+                }
+                // Initialize with default
+                saveWordList(DEFAULT_LIST);
+                return [...DEFAULT_LIST];
+            }
+
+            function saveWordList(list) {
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(list));
+            }
+
+            // ============ GLOBAL WORD ARRAY ============
+            let nounData = loadWordList().map((item, idx) => ({ ...item, index: idx }));
+
+            // Serial indices and current objects
+            let spellIndex = 0;
+            let quizIndex = 0;
+            let currentQuizWordObj = null;
+            let currentSpellWordObj = null;
+            let score = 0;
+
+            // Spell state
+            let sourceLetters = [], slotLetters = [];
+            let isChecking = false, interactionDisabled = false;
+            let spellWordCount = 0;
+            let spellFirstAttempt = true;
+
+            // Quiz state
+            let quizOptions = [];
+            let typingSuccessCount = 0;
+            const typingTarget = 3;
+            let quizAnswered = false;
+            let quizWordCount = 0;
+            let quizFirstAttempt = true;
+
+            // DOM
+            const flipOverlay = document.getElementById('flipOverlay');
+            const flipCardInner = document.getElementById('flipCardInner');
+            const flipWordDisplay = document.getElementById('flipWordDisplay');
+            const flipMeaningDisplay = document.getElementById('flipMeaningDisplay');
+            const flipSpeakerBtn = document.getElementById('flipSpeakerBtn');
+            const flipContinueBtn = document.getElementById('flipContinueBtn');
+            const flipWordAgain = document.getElementById('flipWordAgain');
+            const endOverlay = document.getElementById('endOverlay');
+            const finalScoreSpan = document.getElementById('finalScore');
+            const endRestartBtn = document.getElementById('endRestartBtn');
+            const nounPanel = document.getElementById('nounPanel');
+            const practicePanel = document.getElementById('practicePanel');
+            const addPanel = document.getElementById('addPanel');
+            const dropZone = document.getElementById('dropZone');
+            const sourceArea = document.getElementById('sourceArea');
+            const speakerBtn = document.getElementById('speakerBtn');
+            const scoreValue = document.getElementById('scoreValue');
+            const spellFeedback = document.getElementById('spellFeedback');
+            const spellWordCounter = document.getElementById('spellWordCounter');
+            const quizOptionsDiv = document.getElementById('quizOptions');
+            const quizFeedback = document.getElementById('quizFeedback');
+            const typingArea = document.getElementById('typingArea');
+            const hintWordDisplay = document.getElementById('hintWordDisplay');
+            const quizInput = document.getElementById('quizInput');
+            const checkTypeBtn = document.getElementById('checkTypeBtn');
+            const typingFeedback = document.getElementById('typingFeedback');
+            const quizWordCounter = document.getElementById('quizWordCounter');
+            const tabNounBtn = document.getElementById('tabNoun');
+            const tabPracticeBtn = document.getElementById('tabPractice');
+            const tabAddBtn = document.getElementById('tabAdd');
+            const headerRestartBtn = document.getElementById('headerRestartBtn');
+            const newEnglishInput = document.getElementById('newEnglish');
+            const newOdiaInput = document.getElementById('newOdia');
+            const addWordBtn = document.getElementById('addWordBtn');
+            const addFeedback = document.getElementById('addFeedback');
+
+            // Audio
+            function playSuccessSound() {
+                try {
+                    const ctx = new(window.AudioContext || window.webkitAudioContext)();
+                    const now = ctx.currentTime;
+                    [523.25, 659.25].forEach((f, i) => {
+                        const o = ctx.createOscillator();
+                        const g = ctx.createGain();
+                        o.type = 'triangle';
+                        o.frequency.setValueAtTime(f, now + i * 0.1);
+                        g.gain.setValueAtTime(0.2, now + i * 0.1);
+                        g.gain.exponentialRampToValueAtTime(0.001, now + i * 0.1 + 0.3);
+                        o.connect(g); g.connect(ctx.destination);
+                        o.start(now + i * 0.1); o.stop(now + i * 0.1 + 0.3);
+                    });
+                } catch(e){}
+            }
+            function playErrorSound() {
+                try {
+                    const ctx = new(window.AudioContext || window.webkitAudioContext)();
+                    const o = ctx.createOscillator();
+                    const g = ctx.createGain();
+                    o.type = 'sawtooth';
+                    o.frequency.setValueAtTime(150, ctx.currentTime);
+                    g.gain.setValueAtTime(0.2, ctx.currentTime);
+                    g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.3);
+                    o.connect(g); g.connect(ctx.destination);
+                    o.start(); o.stop(ctx.currentTime + 0.3);
+                } catch(e){}
+            }
+            function speakWord(word) {
+                if (!('speechSynthesis' in window)) return;
+                window.speechSynthesis.cancel();
+                const u = new SpeechSynthesisUtterance(word);
+                u.lang = 'en-US'; u.rate = 0.85;
+                window.speechSynthesis.speak(u);
+            }
+
+            // ============ Flip card ============
+            function showFlipCard(wordObj, callback) {
+                flipWordDisplay.textContent = wordObj.word;
+                flipMeaningDisplay.textContent = wordObj.odia;
+                flipWordAgain.textContent = wordObj.word;
+                flipCardInner.classList.remove('flipped');
+                flipOverlay.classList.remove('hidden');
+                flipSpeakerBtn.onclick = () => speakWord(wordObj.word);
+                flipCardInner.onclick = (e) => {
+                    if (e.target.closest('button')) return;
+                    flipCardInner.classList.add('flipped');
+                };
+                flipContinueBtn.onclick = () => {
+                    flipOverlay.classList.add('hidden');
+                    callback();
+                };
+            }
+
+            // ============ Score ============
+            function addPoint() { score++; scoreValue.textContent = score; }
+
+            // ============ End modal ============
+            function showEndModal() {
+                finalScoreSpan.textContent = score;
+                endOverlay.classList.remove('hidden');
+            }
+            endRestartBtn.addEventListener('click', () => {
+                endOverlay.classList.add('hidden');
+                restartCurrentTab();
+            });
+            headerRestartBtn.addEventListener('click', restartCurrentTab);
+
+            function restartCurrentTab() {
+                score = 0; scoreValue.textContent = '0';
+                if (currentTab === 'noun') {
+                    quizIndex = 0; quizWordCount = 0;
+                    loadQuizWord();
+                } else if (currentTab === 'practice') {
+                    spellIndex = 0; spellWordCount = 0;
+                    loadSpellWord();
+                }
+            }
+
+            // ============ Serial retrieval ============
+            function getNextQuizWord() {
+                const obj = nounData[quizIndex];
+                quizIndex = (quizIndex + 1) % nounData.length;
+                return obj;
+            }
+            function getNextSpellWord() {
+                const obj = nounData[spellIndex];
+                spellIndex = (spellIndex + 1) % nounData.length;
+                return obj;
+            }
+
+            // ============ Tab switching ============
+            let currentTab = 'noun';
+            function switchTab(tab) {
+                currentTab = tab;
+                nounPanel.style.display = practicePanel.style.display = addPanel.style.display = 'none';
+                tabNounBtn.classList.remove('active'); tabPracticeBtn.classList.remove('active'); tabAddBtn.classList.remove('active');
+                if (tab === 'noun') {
+                    nounPanel.style.display = 'flex';
+                    tabNounBtn.classList.add('active');
+                } else if (tab === 'practice') {
+                    practicePanel.style.display = 'flex';
+                    tabPracticeBtn.classList.add('active');
+                } else if (tab === 'add') {
+                    addPanel.style.display = 'flex';
+                    tabAddBtn.classList.add('active');
+                }
+            }
+            tabNounBtn.addEventListener('click', () => switchTab('noun'));
+            tabPracticeBtn.addEventListener('click', () => switchTab('practice'));
+            tabAddBtn.addEventListener('click', () => switchTab('add'));
+
+            // ============ Add Word logic ============
+            addWordBtn.addEventListener('click', () => {
+                const eng = newEnglishInput.value.trim().toLowerCase();
+                const odia = newOdiaInput.value.trim();
+                if (!eng || !odia) {
+                    addFeedback.textContent = 'Please fill both fields.';
+                    return;
+                }
+                // Shift out oldest, push new
+                nounData.shift();
+                nounData.push({ word: eng, odia: odia, index: nounData.length });
+                // Update localStorage
+                saveWordList(nounData.map(({word, odia}) => ({ word, odia })));
+                // Reset indices (optional: keep as is, but could be confusing)
+                // We'll leave indices as they are; games might skip but restart fixes.
+                addFeedback.textContent = `✅ Added "${eng}" (list kept at 20).`;
+                newEnglishInput.value = ''; newOdiaInput.value = '';
+                // If user is in another tab, they can restart to see updated list.
+            });
+
+            // ============ Spell / Practice Mode ============
+            function loadSpellWord() {
+                const wordObj = getNextSpellWord();
+                currentSpellWordObj = wordObj;
+                startSpellGame();
+            }
+            function startSpellGame() {
+                const word = currentSpellWordObj.word;
+                spellWordCount++;
+                spellWordCounter.textContent = `Word ${spellWordCount}/20`;
+                spellFirstAttempt = true;
+                const letters = [];
+                for (let i = 0; i < word.length; i++) {
+                    letters.push({ char: word[i], id: word[i] + i + Date.now(), colorIndex: i % 5 });
+                }
+                sourceLetters = shuffle(letters);
+                slotLetters = new Array(word.length).fill(null);
+                isChecking = false; interactionDisabled = false;
+                spellFeedback.textContent = '';
+                dropZone.classList.remove('shake', 'success-glow');
+                renderSpell();
+                speakWord(word);
+            }
+            function shuffle(arr) {
+                const a = [...arr];
+                for (let i = a.length - 1; i > 0; i--) {
+                    const j = Math.floor(Math.random() * (i + 1));
+                    [a[i], a[j]] = [a[j], a[i]];
+                }
+                return a;
+            }
+            function renderSpell() {
+                dropZone.innerHTML = '';
+                for (let i = 0; i < slotLetters.length; i++) {
+                    const slot = document.createElement('div');
+                    slot.className = 'slot';
+                    if (slotLetters[i]) {
+                        slot.classList.add('filled');
+                        slot.innerHTML = `<span>${slotLetters[i].char}</span>`;
+                        slot.draggable = true;
+                        slot.addEventListener('dragstart', (e) => { if (!interactionDisabled) e.dataTransfer.setData('text/plain', 'slot-'+i); });
+                    }
+                    slot.addEventListener('dragover', e => e.preventDefault());
+                    slot.addEventListener('drop', (e) => handleSlotDrop(e, i));
+                    slot.addEventListener('click', () => handleSlotClick(i));
+                    dropZone.appendChild(slot);
+                }
+                renderSource();
+            }
+            function renderSource() {
+                sourceArea.innerHTML = '';
+                sourceLetters.forEach(l => {
+                    const b = document.createElement('div');
+                    b.className = 'letter-block color-' + l.colorIndex;
+                    b.textContent = l.char;
+                    b.draggable = true;
+                    b.addEventListener('dragstart', (e) => { if (!interactionDisabled) e.dataTransfer.setData('text/plain', 'source-'+l.id); });
+                    b.addEventListener('dblclick', () => handleDoubleClick(l));
+                    sourceArea.appendChild(b);
+                });
+                sourceArea.addEventListener('dragover', e => e.preventDefault());
+                sourceArea.addEventListener('drop', handleSourceDrop);
+            }
+            function handleSlotDrop(e, targetIdx) {
+                e.preventDefault();
+                if (interactionDisabled) return;
+                const data = e.dataTransfer.getData('text/plain');
+                if (data.startsWith('source-')) {
+                    const id = data.split('-')[1];
+                    const letter = sourceLetters.find(l => l.id === id);
+                    if (!letter) return;
+                    if (slotLetters[targetIdx]) sourceLetters.push(slotLetters[targetIdx]);
+                    slotLetters[targetIdx] = letter;
+                    sourceLetters = sourceLetters.filter(l => l.id !== id);
+                } else if (data.startsWith('slot-')) {
+                    const from = parseInt(data.split('-')[1]);
+                    [slotLetters[from], slotLetters[targetIdx]] = [slotLetters[targetIdx], slotLetters[from]];
+                }
+                renderSpell();
+                checkSpellComplete();
+            }
+            function handleSourceDrop(e) {
+                e.preventDefault();
+                const data = e.dataTransfer.getData('text/plain');
+                if (data.startsWith('slot-')) {
+                    const from = parseInt(data.split('-')[1]);
+                    if (slotLetters[from]) {
+                        sourceLetters.push(slotLetters[from]);
+                        slotLetters[from] = null;
+                        renderSpell();
+                    }
+                }
+            }
+            function handleSlotClick(idx) {
+                if (interactionDisabled || !slotLetters[idx]) return;
+                sourceLetters.push(slotLetters[idx]);
+                slotLetters[idx] = null;
+                renderSpell();
+            }
+            function handleDoubleClick(letter) {
+                if (interactionDisabled) return;
+                const empty = slotLetters.findIndex(s => !s);
+                if (empty !== -1) {
+                    sourceLetters = sourceLetters.filter(l => l.id !== letter.id);
+                    slotLetters[empty] = letter;
+                    renderSpell();
+                    checkSpellComplete();
+                }
+            }
+            function checkSpellComplete() {
+                if (slotLetters.includes(null) || isChecking) return;
+                isChecking = true;
+                const formed = slotLetters.map(s => s.char).join('');
+                if (formed === currentSpellWordObj.word && spellFirstAttempt) {
+                    addPoint();
+                    spellFeedback.textContent = '🎉 Correct! +1';
+                    dropZone.classList.add('success-glow');
+                    playSuccessSound();
+                    spellFirstAttempt = false; interactionDisabled = true;
+                    setTimeout(() => {
+                        dropZone.classList.remove('success-glow');
+                        interactionDisabled = false; isChecking = false;
+                        if (currentSpellWordObj.index === 19) showEndModal();
+                        else loadSpellWord();
+                    }, 1200);
+                } else {
+                    spellFirstAttempt = false; interactionDisabled = true;
+                    spellFeedback.textContent = '❌ Try again';
+                    dropZone.classList.add('shake'); playErrorSound();
+                    setTimeout(() => {
+                        dropZone.classList.remove('shake');
+                        for (let i = 0; i < slotLetters.length; i++) if (slotLetters[i]) sourceLetters.push(slotLetters[i]);
+                        slotLetters = new Array(currentSpellWordObj.word.length).fill(null);
+                        sourceLetters = shuffle(sourceLetters);
+                        spellFeedback.textContent = '';
+                        renderSpell();
+                        interactionDisabled = false; isChecking = false;
+                    }, 600);
+                }
+            }
+
+            // ============ Quiz / Noun Mode ============
+            function loadQuizWord() {
+                const wordObj = getNextQuizWord();
+                currentQuizWordObj = wordObj;
+                showFlipCard(wordObj, startQuizGame);
+            }
+            function startQuizGame() {
+                quizWordCount++;
+                quizWordCounter.textContent = `Word ${quizWordCount}/20`;
+                quizAnswered = false; quizFirstAttempt = true;
+                typingSuccessCount = 0;
+                typingArea.style.display = 'none'; quizFeedback.textContent = '';
+                quizInput.value = ''; quizInput.disabled = false; checkTypeBtn.disabled = false;
+                hintWordDisplay.textContent = '';
+                generateQuizOptions(currentQuizWordObj.word);
+                speakWord(currentQuizWordObj.word);
+            }
+            function generateQuizOptions(word) {
+                const set = new Set();
+                const t = [
+                    w => { if(w.length<2) return null; const i=Math.floor(Math.random()*(w.length-1)); const a=w.split(''); [a[i],a[i+1]]=[a[i+1],a[i]]; return a.join(''); },
+                    w => { const i=Math.floor(Math.random()*w.length); const l='abcdefghijklmnopqrstuvwxyz'; let r; do{r=l[Math.floor(Math.random()*26)];}while(r===w[i]); return w.substring(0,i)+r+w.substring(i+1); },
+                    w => { if(w.length<=1) return null; const i=Math.floor(Math.random()*w.length); return w.substring(0,i)+w.substring(i+1); },
+                    w => { const l='abcdefghijklmnopqrstuvwxyz'; const r=l[Math.floor(Math.random()*26)]; return w.substring(0,Math.floor(Math.random()*(w.length+1)))+r+w.substring(Math.floor(Math.random()*(w.length+1))); }
+                ];
+                while (set.size < 3) {
+                    const f = t[Math.floor(Math.random()*t.length)];
+                    const m = f(word);
+                    if (m && m !== word) set.add(m);
+                }
+                quizOptions = [...set, word].sort(() => Math.random() - 0.5);
+                quizOptionsDiv.innerHTML = '';
+                quizOptions.forEach(opt => {
+                    const btn = document.createElement('button');
+                    btn.className = 'quiz-option';
+                    btn.textContent = opt;
+                    btn.addEventListener('click', () => handleQuizChoice(opt, btn));
+                    quizOptionsDiv.appendChild(btn);
+                });
+            }
+            function handleQuizChoice(choice, btn) {
+                if (quizAnswered) return;
+                quizAnswered = true;
+                document.querySelectorAll('.quiz-option').forEach(b => b.disabled = true);
+                if (choice === currentQuizWordObj.word && quizFirstAttempt) {
+                    btn.classList.add('correct-choice');
+                    quizFeedback.textContent = '🎉 Correct! +1';
+                    addPoint(); quizFirstAttempt = false;
+                    playSuccessSound();
+                    setTimeout(() => {
+                        if (currentQuizWordObj.index === 19) showEndModal();
+                        else loadQuizWord();
+                    }, 1200);
+                } else {
+                    quizFirstAttempt = false;
+                    btn.classList.add('wrong-choice');
+                    quizFeedback.textContent = '❌ Wrong. Type correctly 3 times.';
+                    playErrorSound();
+                    setTimeout(() => {
+                        typingArea.style.display = 'flex';
+                        hintWordDisplay.textContent = currentQuizWordObj.word;
+                        quizInput.value = ''; quizInput.placeholder = currentQuizWordObj.word;
+                        quizInput.disabled = false; quizInput.focus();
+                        typingFeedback.textContent = `0 / 3 correct`;
+                    }, 500);
+                }
+            }
+            checkTypeBtn.addEventListener('click', () => {
+                if (typingSuccessCount >= typingTarget) return;
+                const typed = quizInput.value.trim().toLowerCase();
+                if (typed === currentQuizWordObj.word) {
+                    typingSuccessCount++; quizInput.value = ''; playSuccessSound();
+                    if (typingSuccessCount >= typingTarget) {
+                        typingFeedback.textContent = '✅ Done!';
+                        quizInput.disabled = true; checkTypeBtn.disabled = true;
+                        setTimeout(() => {
+                            if (currentQuizWordObj.index === 19) showEndModal();
+                            else loadQuizWord();
+                        }, 1000);
+                    } else {
+                        typingFeedback.textContent = `${typingSuccessCount} / 3 correct`;
+                        quizInput.focus();
+                    }
+                } else {
+                    playErrorSound(); quizInput.value = ''; quizInput.focus();
+                    typingFeedback.textContent = `❌ Wrong. ${typingSuccessCount} / 3`;
+                }
+            });
+            quizInput.addEventListener('keydown', e => { if (e.key === 'Enter') checkTypeBtn.click(); });
+
+            // Shared speaker
+            speakerBtn.addEventListener('click', () => {
+                const w = currentTab === 'noun' ? currentQuizWordObj?.word : (currentTab === 'practice' ? currentSpellWordObj?.word : null);
+                if (w) speakWord(w);
+            });
+
+            // Initial start
+            switchTab('noun');
+            loadQuizWord();
+        })();
+    </script>
+</body>
+</html>
